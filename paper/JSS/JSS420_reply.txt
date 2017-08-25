@@ -1,0 +1,235 @@
+Jan,
+
+thanks again for the reviews for our software/manuscript:
+  JSS 420
+  Automatic Generation of Simple (Statistical) Exams
+  Bettina Gruen, Achim Zeileis
+
+We have revised both, software and manuscript, trying to
+address all comments of the referees. A detailed point-to-point
+reply is included below. Here, we briefly summarize the
+major changes.
+
+Software:
+  o In addition to exercises with multiple choice and numeric
+    solutions there is now support for solutions consisting
+    of (short) strings.
+  o Asymmetric tolerances for numeric solutions are now supported,
+    e.g., allowing for interval arithmetic.
+
+Manuscript:
+  o The introduction now emphasizes the focus of our submission:
+    providing software support for large-scale exams.
+    Remarks about other (than technological) aspects are deferred
+    to a discussion section at the end of the manuscript.
+  o The last section is now split into discussion and summary.
+    The former tries to highlight some aspects of developing
+    "good" teaching materials, references the literature in that
+    field and provides some of our experiences at WU Wien.
+
+We hope that this addresses all concerns of the previous version.
+
+Best regards,
+Bettina & Achim
+
+---
+
+ASSOCIATE EDITOR
+
+> The paper describing the design and application of the `exam' package
+> has been carefully reviewed by two referees. The `exam' package helps
+> to organize and maintain a collection of exercises which can be used
+> to automatically produce a potentially huge number of student-specific
+> exams. Both referees and the AE suggest to publish the manuscript after 
+> minor adjustments.
+> 
+> Two points should be addressed in the revision. Both referees ask to discuss 
+> the problem of rounding errors in more detail. This can be done by
+> extending the t-test example. The second referee suggests to
+> give recommendations how `good' questions should be formulated. While
+> I acknowledge that this is somewhat out of scope, one or two
+> paragraphs based on the authors' practical experience would make 
+> the paper more lively.
+
+Thanks for these suggestions. We split up the last section into
+discussion and summary. The former now discusses explicitely aspects
+of exam generation that are not covered by the software itself, e.g.,
+we try to highlight challenges in the design of "good" questions, also
+including references to publications that address this directly. In
+that section, we also share some of our experiences at WU Wien with
+the new material, including our strategy for dealing with rounding
+errors.
+
+In the discussion of the software itself, we have not extended the
+t-test example with further rounding strategies. The reason is that
+the rounding error is not really dealt with in the software itself.
+The user of "exams" can decide whether a fixed tolerance should be
+used (as done in our small toy exercise) or whether the tolerance
+should be also driven by the DGP (as suggested by referee 1). This
+is now pointed out more clearly in Section 2 and brought up again
+in the new Section 5.
+
+---
+
+REFEREE 1
+
+> The paper is well written and understandable. The problem has been
+> nicely stated and the solution is very well thought-out. The
+> implementation works well and has good documentation. I have no major
+> issues with the manuscript.
+>  
+> It would be good to see the issues of rounding of intermediate results
+> discussed more. Basically, how do you know that the specified
+> numerical tolerances are good enough? For example, in the t-statistic
+> exercise:
+>  
+>  Mean <- round(mean(y), digits = 1)
+>  Var <- round(var(y), digits = 2)
+>  tstat <- round((Mean - mu)/sqrt(Var/n), digits = 3)
+>  
+> Given floating point precision is being used here (in the calculation
+> of tstat), it doesn't necessarily mirror what the student would
+> do. Are the students given any guidelines on what level of rounding to
+> use (or different methods of rounding)? Does the issue of rounding
+> limit what the package can do (e.g. giving the students raw values
+> instead of pre-summarized statistics)?
+
+Students were instructed to not round intermediate results and to only
+round the final result to three digits. By having a fixed tolerance of
+0.01 this essentially implies that in fact their numeric result only has
+to be correct to two digits. Typically, we recommend that students store
+intermediate results in their calculators so that their approach is
+quite close to what we do in R.
+  
+> It seems like the tolerance specification in exams is a manual and
+> perhaps ill-defined step; is there a more robust way of setting it
+> universally? One (probably excessive) solution would be to do the
+> above calculation many times of different levels of rounding and use
+> the resulting distribution to set the tolerance limits:
+>  
+>  y <- rnorm(20, 10, 4)
+>  mu <- 11
+>  
+>  dig <- expand.grid(mn = 2:3,
+>                     vr = 2:3,
+>                     diff = 2:3,
+>                     ratio = 2:3,
+>                     sqrt = 2:3,
+>                     tstat = 2:3)
+>  
+>  foo <- function(d, data, mu)
+>       {  
+>         Mean <- round(mean(data), digits = d["mn"])
+>         Var <- round(var(data), digits = d["vr"])
+>         delta <- round(Mean - mu, digits = d["diff"])
+>         ratio <- round(Var/length(data), digits = d["ratio"])
+>         sqrtRatio <- round(sqrt(ratio), digits = d["sqrt"])
+>         tstat <- round(delta/sqrtRatio, digits = d["tstat"])
+>         tstat
+>       }
+>  
+>  distr <- apply(dig, 1, foo, data = y, mu = mu)
+>  
+> This may be hitting a tack with a sledgehammer, but an analytical
+> solution may be a better approach. I understand that students can be
+> tenacious about grades and the rounding might be an issue that comes
+> up periodically.
+
+Certainly more elaborate ways of fixing the tolerance of numeric
+results are useful in some circumstances. This is already supported
+in "exams" because any data-driven tolerance (as illustrated in your
+code chunk above) can be passed to \extol{} using \Sexpr{}.
+
+Our fixed value 0.01 was mainly chosen for simplicity in this
+basic example. The revised manuscript now points out more clearly
+that other approaches of setting \extol{} are conceivable.
+
+---
+
+REFEREE 2
+
+> Der Artikel muesste eigentlich zweiteilig sein: 1. Konzeption von
+> Aufgaben und 2. Generierung einer Vielzahl von (dynamischen)
+> Aufgaben. Er geht nur am Rande auch auf die Konzeption von Aufgaben
+> durch die Lehrenden ein. Grundsaetzliche Probleme werden dabei jedoch
+> nicht angesprochen, z.B.
+> 
+> - sinnvolle Multiple-Choice-Antworten
+> - bei Zahlenaufgaben, dass Problem der Rundung im Rechenweg
+> - die Moeglichkeit Antworten so zu formulieren, dass bestimmte Fehler
+>   in den Antworten vorkommen
+>
+> Dies ist zwar nicht Ziel des Paketes, aber dies macht eine "gute"
+> Aufgabe wesentlich aus. Da liegen zum einen grundsaetzliche Grenzen
+> des Paketes ("sinnvolle Multiple-Choice-Antworten") zum anderen wird
+> nur eine sehr begrenzte Unterstaetzung geliefert ("Rundung im
+> Rechenweg").
+> 
+> Es ist eben nicht genuegend, einfach nur eine Vielzahl von Aufgaben zu
+> generieren und die Autoren sollten dies auch klar und deutlich
+> sagen. Zumal in ihrem Beispiel zum t-test, z.B. in Bezug auf
+> Rundungen, auch erheblich mehr steckt.
+
+This is certainly true. Therefore, we now point out more clearly
+in the revised introduction that the aim of the software/manuscript
+is to provide computational infrastructure aiding the generation of
+exams/exercises. A few short remarks/references on how to generate
+"good" exercises are now included in the new Section 5.
+
+> Einzelfragen/kommentare:
+> ------------------------
+> 
+> - Bei dem Titel wuerde ich "Simple" weglassen, denn "Simple" muessen
+>   die Exams nicht sein und "Statistical" entweder reinschreiben oder
+>   nicht; aber bitte nicht in Klammern.
+
+We changed the title to "Automatic Generation of Exams in R".
+ 
+> - Impliziert "Scalable exams" nicht "Associated self-study materials"?
+>   Ist es nicht eher eine Frage der Menge von Aufgaben und eigentlich
+>   nicht der Software?
+
+Surely the number of exercises is crucial for scalability. The generation
+of many good exercises is a major part in the design of a scalable
+exam and this is not alleviated much by our software package.
+However, the implementation in software is not a negligible part
+of the effort. Also, a technological framework often helps to aid
+discussions about the content and broaden the scope of what is
+easy/possible to achieve in automatized exams.
+ 
+> - Wie handhabt man Aufgaben mit aufeinander aufbauende Teilaufgaben
+>   und mehreren Teilloesungen, z.B.
+> a) Gib die Hypothesen an um die Differenz der Mittelwerte zu testen?
+> b) Wie sieht die zugehoerige Teststatistik aus?
+> c) Welchen Wert hat der Pruefwert?
+> d) Welches ist der Annahmebereich der Nullhypothese?
+> e) Welche Testentscheidung wird getroffen?
+
+exams() evaluates all Rnw exercise files of one exam consecutively
+using Sweave() and constructs the correspodning tex files before
+starting with the next exam. This allows to use the same random data
+in several exercises given that they are only generated in the first
+exercise and not overwritten subsequently.
+ 
+> - Wie geht man mit Teilaufgabe a) um, wo es weder ein numerische
+>   Resultate oder Multiple-Choice-Resulate gibt?
+
+This is a good idea which we had not thought about previously.
+We added a new typ of exercise with a "string" solution (in addition
+to the previously available multiple choice and numeric solutions).
+ 
+> - Warum wird nicht ein Ansatz mit Intervallarithmetik verfolgt statt
+>   mit \extol?
+
+Another good idea that we had not thought about because we did not
+need it for our courses. \extol now allows to specify different
+deviations from the correct solution to the lower and the upper
+side. The solution from applying interval arithmetic can thus be set
+as a tolerance interval.
+ 
+> - Die Autoren sollte ueberlegen, ob Sie die Beschreibung der Parameter
+>   auf Seite 9 kuerzen koennen.
+
+We now separate the argument description and the subsequent illustrative
+example more clearly. Now, the description of the function and its
+parameters fits on one page.

@@ -1,0 +1,390 @@
+\documentclass[11pt,compress,t]{beamer}
+\usetheme{Z}
+%% new environments for exams
+\newenvironment{question}{\item \textbf{Problem}\newline}{}
+\renewenvironment{solution}{\textbf{Solution}\newline}{}
+%% for \usepackage{Sweave}
+\SweaveOpts{engine=R, strip.white=TRUE, keep.source=TRUE, eps=FALSE}
+<<setup, echo=FALSE, results=hide>>=
+options(prompt = "R> ", continue = "+  ", width = 55,
+  digits = 4, show.signif.stars = FALSE, useFancyQuotes = FALSE)
+@
+
+<<preliminaries, echo=FALSE, results=hide>>=
+library("exams")
+combine <- function(x, sep, width) {
+  cs <- cumsum(nchar(x))
+  remaining <- if (any(cs[-1] > width)) combine(x[c(FALSE, cs[-1] > width)], sep, width)
+  c(paste(x[c(TRUE, cs[-1] <= width)], collapse= sep), remaining)
+}
+prettyPrint <- function(x, sep = " ", linebreak = "\n\t", width = getOption("width")) {
+  x <- strsplit(x, sep)[[1]]
+  paste(combine(x, sep, width), collapse = paste(sep, linebreak, collapse = ""))
+}
+set.seed(1090)
+@
+
+\begin{document}
+
+\title{Automatic Generation of Exams in R}
+\author[Bettina Gr\"un, Achim Zeileis]{\large Bettina Gr\"un, Achim Zeileis}
+\lecture{Automatic Generation of Exams in R}
+
+\subsection{Overview}
+
+\begin{frame}
+\frametitle{Overview}
+\begin{itemize}
+  \item Introduction
+    \begin{itemize}
+    \item Challenges
+    \item Solution implemented in the \proglang{R} package \pkg{exams}
+    \end{itemize}
+  \item Exercises
+  \item Combining exercises: The master {\LaTeX} file
+  \item Application and customization: Function \code{exams()}
+  \item Discussion
+\end{itemize}
+\end{frame}
+
+\subsection{Introduction}
+\begin{frame}
+\frametitle{Introduction}
+  \begin{block}{Re-design of introductory statistics lecture at WU Wien:}
+  \begin{itemize}
+  \item The course is attended each semester by 1,000--1,500 students
+    (mostly first-year business students).
+  \item Several lecturers from the Department of Statistics and
+    Mathematics teach this course in parallel.
+  \item All teaching materials are covered by the re-design:
+    Presentation slides, collections of exercises, exams, etc.
+  \item The re-design was accomplished through a collaborative effort
+    of all concerned faculty members working in small teams on
+    different chapters.
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Introduction}
+
+\begin{block}{Main challenges:}
+  \begin{itemize}
+  \item \textit{Scalable exams:} Automatic generation of a large number
+    of different exams.
+  \item \textit{Associated self-study materials:} Collections of exercises
+    and solutions from the same pool of examples.
+  \item \textit{Joint development:} Development and maintenance of a large
+    pool of exercises in a multi-author and cross-platform setting.
+  \end{itemize}
+\end{block}
+
+\begin{block}{Tools chosen:}
+\begin{itemize}
+\item \proglang{R} (\proglang{R} Development Core Team 2011) and
+  {\LaTeX} (Knuth 1984; Lamport 1994) $\Rightarrow$ Sweave (Leisch 2002)
+\item \proglang{Subversion} (SVN; Pilato, Collins-Sussman, and
+  Fitzpatrick 2004)
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Introduction}
+
+\begin{block}{Design principles of package \pkg{exams}:}
+  \begin{itemize}
+  \item \textit{Maintenance:} Each exercise template is a single file
+    (also just called ``exercise'').
+  \item \textit{Variation:} Exercises are dynamic documents, containing a
+    problem/solution along with a data-generating process (DGP) so that
+    random samples can be drawn easily.
+  \item \textit{Correction:} Solutions for exercises are either multiple-choice
+    answers (logical vectors), or numeric values (e.g., a test statistic
+    or a confidence interval), or short text answers (character strings).
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\subsection{Exercises}
+
+\begin{frame}[fragile] 
+\frametitle{Exercises}
+  Each exercise typically represents an exemplary application of a
+  statistical procedure.
+  \vspace{\stretch{1}}
+  
+  The exercise file consists of (at least):
+  \begin{itemize}
+  \item \emph{Two environments:} A question and a solution description
+    encapsulated in corresponding {\LaTeX} environments.
+  \item \emph{Meta-information:} About type of questions
+    (e.g., multiple-choice or numeric), the solution, a descriptive
+    name and the allowed tolerance for numeric solutions.
+  \end{itemize}
+  \vspace{\stretch{1}}
+  An exercise file can be processed in \proglang{R} by:
+<<>>=  
+library("exams")
+tstat_sol <- exams("tstat.Rnw")
+tstat_sol
+@ 
+\vspace{\stretch{2}}
+\end{frame}
+\begin{frame}[fragile]
+\frametitle{A simple Sweave exercise: \code{tstat.Rnw}}
+\vspace*{-0.7cm}
+{\scriptsize
+<<echo=FALSE, results=tex>>=
+Rnw <- readLines("tstat-shortened.Rnw")
+cat(c("\\begin{verbatim}", Rnw, "\\end{verbatim}"), sep = "\n")
+@
+}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{{\LaTeX} output of \code{Sweave("tstat.Rnw")}}
+\vspace*{-0.7cm}
+{\scriptsize
+<<echo=FALSE, results=hide>>=
+tex <- readLines("tstat-shortened.tex")
+@
+<<echo=FALSE, results=tex>>=
+cat(c("\\begin{verbatim}", tex, "\\end{verbatim}"), sep = "\n")
+@
+}
+\end{frame}
+\begin{frame}[fragile]
+\frametitle{Display of processed \code{tstat} exercise}
+{\small
+%% to PDF
+\begin{itemize}
+<<echo=FALSE, results=hide>>=
+invisible(file.copy(system.file("exercises", "tstat.Rnw", package = "exams"), "tstat.Rnw"))
+set.seed(1090)
+Sweave("tstat.Rnw")
+@ 
+<<echo=FALSE, results=tex>>=
+cat(readLines("tstat.tex"), sep = "\n")
+@ 
+<<echo=FALSE, results=hide>>=
+file.remove(c("tstat.Rnw", "tstat.tex"))
+@
+
+\end{itemize}
+}
+\end{frame}
+\subsection{Combining exercises: The master {\LaTeX} file} 
+  \begin{frame}[fragile] 
+    \frametitle{Combining exercises: The master {\LaTeX} file} 
+  \code{exams()} allows for
+\begin{itemize}
+\item Construction of exams with stratified sampling of exercises.
+\item Automatic generation of multiple copies (potentially of
+  multiple layouts) with suitable names and storage.
+\item Inclusion of a suitable cover page with answer fields.
+\item Collection of meta-information for problems and solutions in
+      an \proglang{R}~object.
+\end{itemize}  
+\end{frame}    
+  \begin{frame}[fragile] 
+    \frametitle{Sequence of work steps for \code{exams()}}
+\begin{enumerate}
+  \item Collect all Sweave files for the exercises, the master {\LaTeX}
+        file(s) and potentially  additionally specified input files.
+  \item Copy all files to a directory (temporary, by default).
+  \item Run \code{Sweave()} for each exercise.
+  \item Produce a copy of the master {\LaTeX} file(s) in which certain
+    control structures are substituted by dynamically generated
+    {\LaTeX} commands (e.g., for including the exercises).
+  \item Run \code{texi2dvi()} for each master {\LaTeX} file.
+  \item Store the resulting PDF file(s) in an output directory
+        or display it on the screen (for a single file only, by default).
+\end{enumerate}
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{A simple master {\LaTeX} file: \code{plain.tex}}
+{\scriptsize
+<<echo=FALSE, results=tex>>=
+tex <- readLines(system.file("tex", "plain.tex", package = "exams"))
+cat(c("\\begin{verbatim}", tex, "\\end{verbatim}"), sep = "\n")
+@
+}
+
+To hide the solution the corresponding environment needs to be defined
+as a comment:
+
+{\scriptsize
+\begin{verbatim}
+\newenvironment{solution}{\comment}{\endcomment}
+\end{verbatim}
+}
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{Possible dynamic modifications}
+<<echo=FALSE, results=hide>>=
+tstat_char <- strsplit(gsub("\\.", "", as.character(tstat_sol[[1]][[1]]$solution)), "")[[1]]
+tstat_exnum <- rep("", 9)
+tstat_exnum[(10 - length(tstat_char)):9] <- tstat_char
+tstat_exnum <- paste("{", tstat_exnum, "}", sep = "", collapse = "")
+@
+  
+\begin{itemize}
+\item \verb|\exinput{exercises}|: Inclusion of exercises.\\
+      Replaced by: \verb|\input{|{\it filename}\verb|}| (one for each exercise).\\
+      Example: \verb|\input{tstat}|.
+\item \verb|\exinput{questionnaire}|: Inclusion of questionnaires, e.g., for cover sheets.\\
+      Replaced by: \verb|\exnum{|{\it \dots}\verb|}|,
+                   \verb|\exmchoice{|{\it \dots}\verb|}|, or
+		   \verb|\exstring{|{\it \dots}\verb|}|, respectively (one for each exercise).\\
+      Example: \verb|\exnum\Sexpr{tstat_exnum}|.
+\item \verb|\exinput{header}|: Further commands and definitions.\\
+      Replaced by: \verb|\|{\it command}\verb|{|{\it value}\verb|}| (one for each header command).\\
+      Example: \verb|\Date{\Sexpr{Sys.Date()}}|.
+\end{itemize}
+\end{frame}
+
+
+\subsection{Application and customization: Function exams()}
+
+\begin{frame}[fragile] 
+\frametitle{Application and customization: Function \code{exams()}}
+
+\textbf{Arguments:}
+\begin{Scode}
+<<results=tex, echo=false>>=
+cat(prettyPrint(prompt(exams, filename = NA)$usage[[2]], sep = ", ", 
+  linebreak = paste("\n", paste(rep(" ", nchar("exams") + 1), collapse = ""), sep= ""),
+  width = 42))
+@
+
+\end{Scode}
+
+\bigskip
+
+\textbf{Illustration:}
+<<>>=
+myexam <- list(
+  "boxplots",
+  c("confint", "ttest", "tstat"),
+  c("anova", "regression"),
+  "scatterplot",
+  "relfreq")
+getID <- function(i) paste("myexam",
+  gsub(" ", "0", format(i, width = 2)), sep = "")
+getID(1)
+@
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Application and customization: Function \code{exams()}}
+
+<<>>=
+odir <- tempfile()
+set.seed(1090)
+sol <- exams(myexam, n = 3, dir = odir, 
+  template = c("exam", "solution"), 
+  header = list(ID = getID, Date = Sys.Date()))
+list.files(odir)
+print(sol, 1)
+@ 
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Application and customization: Function \code{exams()}}
+
+<<results=hide, echo=false>>=
+invisible(file.copy(file.path(odir, "exam1.pdf"), "exam1.pdf"))
+@
+
+\includegraphics[width=0.48\textwidth,keepaspectratio=true]{exam1.pdf}%
+\includegraphics[width=0.48\textwidth,keepaspectratio=true,page=2]{exam1.pdf}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Application and customization: Function \code{exams()}}
+
+Several arguments allow for a fine control, e.g., to modify the print
+output:
+
+<<>>=
+mycontrol <- list(mchoice.print = 
+  list(True = LETTERS[1:5], False = "_"))
+(exams(myexam, n = 1, template = "exam", 
+  control = mycontrol))
+@ 
+
+\end{frame}
+\subsection{Discussion}
+\begin{frame} 
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Package \pkg{exams} provides a framework for automatic
+    generation of simple (statistical) exams and associated self-study
+    materials.
+  \item It is based on independent exercises in Sweave format which
+    can be compiled into exams (or other collections of exercises) by
+    providing one (or more) master {\LaTeX} template(s).
+  \item Contributing to the pool of exercises only requires knowledge
+    of Sweave and minimal markup for meta-information.
+  \item Since Spring 2008, \pkg{exams} is used at WU Wien for
+    generating collections of exercises, trial exams, exams and
+    solutions.
+  \item Statistics exams at Universit\"at Innsbruck will be generated
+    by \pkg{exams} with interface to online learning platform.
+  \item Package \pkg{exams} is available from the Comprehensive \proglang{R}
+    Archive Network at \url{http://CRAN.R-project.org/package=exams}.
+  \end{itemize}
+\end{frame}
+
+\subsection{References}
+\begin{frame}
+\frametitle{References}
+
+\footnotesize
+
+Gr\"un B, Zeileis A (2009).
+  \dquote{Automatic Generation of Exams in R.}
+  \textit{Journal of Statistical Software}, \textbf{29}(10), 1--14.
+  URL~\url{http://www.jstatsoft.org/v29/i10/}
+  
+\bigskip
+    
+Knuth DE (1984).
+  \textit{The {\TeX}book}, volume~A of \emph{Computers and Typesetting}.
+  Addison-Wesley, Reading, Massachusetts.
+
+\bigskip
+
+Lamport L (1994).
+  \textit{{\LaTeX}: A Document Preparation System}, 2nd edition.
+  Addison-Wesley, Reading, Massachusetts.
+
+\bigskip
+
+Leisch F (2002).
+  \textit{Dynamic Generation of Statistical Reports Using Literate Data Analysis.}
+  In W~H\"ardle, B~R\"onz (eds.), \dquote{COMPSTAT 2002 -- Proceedings
+      in Computational Statistics,} pp.~575--580. Physica Verlag, Heidelberg.
+
+\bigskip
+
+Pilato CM, Collins-Sussman B, Fitzpatrick BW (2004).
+  \textit{Version Control with \pkg{Subversion}}.
+  O'Reilly. Full book available at \url{http://svnbook.red-bean.com/}.
+  
+\bigskip
+
+\proglang{R} Development Core Team (2011).
+  \textit{\proglang{R}: {A} Language and Environment for Statistical Computing}.
+  \proglang{R} Foundation for Statistical Computing, Vienna, Austria.
+  {ISBN} 3-900051-07-0, URL~\url{http://www.R-project.org/}.
+
+\end{frame}
+\end{document}
+
+

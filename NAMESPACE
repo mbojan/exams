@@ -1,0 +1,103 @@
+import("stats", "graphics", "tools", "utils")
+importFrom("grDevices", "hcl", "svg")
+
+export(
+  ## outdated version 1 interface
+  "exams",
+
+  ## formatters
+  "mchoice2string",
+  "string2mchoice",
+  "mchoice2text",
+  "answerlist",
+  "round2",
+  "fmt",
+  "char_with_braces",
+  "num2tol",
+  "num_to_tol",
+
+  ## mchoice/schoice generators
+  "num2schoice",
+  "num_to_schoice",
+  "det2schoice",
+  "det_to_schoice",
+  "matrix2schoice",
+  "matrix_to_schoice",
+  "matrix2mchoice",
+  "matrix_to_mchoice",
+  
+  ## version 2 extensible interface
+  "xexams",
+  "xweave",
+  "exams_metainfo",
+  "exams_eval",
+  "exams_skeleton",
+  "exams.skeleton",
+  
+  ## exercise reader and helper functions
+  "read_exercise",
+  "read_metainfo",
+  "extract_command",
+  "extract_extra",
+  "extract_environment",
+  "extract_items",
+  "include_supplement",
+  "match_exams_call",
+
+  ## Stress testing,
+  "stresstest_exercise",
+
+  ## LaTeX to image converter (via ImageMagick's convert)
+  "tex2image",
+
+  ## modular PDF driver
+  "exams2pdf",
+  "make_exams_write_pdf",
+
+  ## HTML driver
+  "exams2html",
+  "make_exercise_transform_html",
+  "make_exercise_transform_pandoc",
+  "make_exams_write_html",
+
+  ## IMS QTI drivers
+  "exams2qti12",
+  "make_itembody_qti12",
+  "exams2qti21",
+  "make_itembody_qti21",
+  "exams2ilias",
+
+  ## Blackboard driver (only partially QTI-based)
+  "exams2blackboard",
+  "make_itembody_blackboard",
+
+  ## WU exam server driver (LOPS)
+  "exams2lops",
+  "make_exams_write_lops",
+
+  ## mimicked WU exam server driver (NOPS)
+  "exams2nops",
+  "make_nops_template",
+  "nops_scan",
+  "nops_eval",
+
+  ## Moodle driver
+  "exams2moodle",
+  "make_question_moodle",
+  "make_question_moodle23",
+
+  ## ARSnova driver
+  "exams2arsnova",
+  "make_exams_write_arsnova",
+  
+  ## TCExam driver
+  "exams2tcexam",
+  
+  ## Pandoc driver
+  "exams2pandoc"
+)
+
+S3method("print", "exams_metainfo")
+S3method("toLatex", "matrix")
+S3method("plot", "stress")
+S3method("as.data.frame", "stress")
