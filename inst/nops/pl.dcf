@@ -1,0 +1,32 @@
+PersonalData: Dane osobowe
+Name: NAME
+FamilyName: Nazwisko
+GivenName: Imię 
+Signature: Podpis
+RegistrationNumber: Numer albumu
+Checked: sprawdzone
+NoChanges: W tej części \textbf{nie wolno} nic zmieniać!
+DocumentType: Typ
+DocumentID: ID testu
+Scrambling: Scrambling
+Replacement: Replacement
+MarkCarefully: Proszę uważnie zaznaczać kratki
+NotMarked: Brak zaznaczenia
+Or: lub
+MarkExampleA: 72
+MarkExampleB: 80
+MarkExampleC: 102
+MarkExampleD: 109
+MarkExampleE: 115
+Warning: Ten dokument jest skanowany automatycznie. Proszę wypełniać staranniei nie zginać. Do wypełnienia dokumentu proszę użyć \textbd{niebieskiego lub czarnego długopisu}. \\ \textbf{Tylko czytelnie wypełnione i dokumenty będą sprawdzane!}
+Answers: Odpowiedzi
+FillAnswers: Poniżej proszę wpisać swoje odpowiedzi.
+Point: punkt
+Points: punkty
+ExamResults: Wyniki testu
+Evaluation: Ocena
+Mark: Stopień
+Question: Pytanie
+GivenAnswer: Udzielona odpowiedź
+CorrectAnswer: Odpowiedź prawidłowa
+ExamSheet: Arkusz testowy
