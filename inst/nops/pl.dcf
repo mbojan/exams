@@ -3,7 +3,7 @@ Name: NAME
 FamilyName: Nazwisko
 GivenName: Imię 
 Signature: Podpis
-RegistrationNumber: Numer albumu
+RegistrationNumber: Numer albumu (pierwsze dwa miejsca proszę zostawić puste)
 Checked: sprawdzone
 NoChanges: W tej części \textbf{nie wolno} nic zmieniać!
 DocumentType: Typ
